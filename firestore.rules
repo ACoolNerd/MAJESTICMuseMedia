@@ -10,6 +10,28 @@ service cloud.firestore {
     function mediaOperator() { return hasRole(['ceo','coo','post']); }
     function growthOperator() { return hasRole(['ceo','coo','social']); }
     function self(uid) { return signedIn() && request.auth.uid == uid; }
+    function validPublicFormSubmission() {
+      return request.resource.data.keys().hasOnly([
+          'formType', 'consent', 'source', 'payload', 'status', 'submittedAt'
+        ]) &&
+        request.resource.data.formType in [
+          'guest-interest',
+          'guest-preparation',
+          'community-story',
+          'guest-suggestion',
+          'sponsor-inquiry',
+          'media-services',
+          'newsletter',
+          'viewer-feedback'
+        ] &&
+        request.resource.data.consent == true &&
+        request.resource.data.status == 'New' &&
+        request.resource.data.source is string &&
+        request.resource.data.source.size() <= 500 &&
+        request.resource.data.payload is map &&
+        request.resource.data.payload.keys().size() <= 30 &&
+        request.resource.data.submittedAt == request.time;
+    }
 
     match /publicContent/{document=**} {
       allow read: if true;
@@ -97,7 +119,7 @@ service cloud.firestore {
     }
 
     match /formSubmissions/{submissionId} {
-      allow create: if true;
+      allow create: if validPublicFormSubmission();
       allow read, update: if executive() || hasRole(['social']);
       allow delete: if executive();
     }
