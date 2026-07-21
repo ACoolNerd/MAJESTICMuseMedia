@@ -52,8 +52,7 @@ service cloud.firestore {
 
     match /approvals/{approvalId} {
       allow read: if staff();
-      allow create: if contentOperator();
-      allow update: if hasRole(['ceo','coo','post','social']);
+      allow create, update: if contentOperator();
       allow delete: if executive();
     }
 
@@ -63,15 +62,21 @@ service cloud.firestore {
       allow delete: if executive();
     }
 
+    match /formSubmissions/{submissionId} {
+      allow create: if true;
+      allow read, update: if executive() || hasRole(['social']);
+      allow delete: if executive();
+    }
+
     match /platformConnections/{connectionId} {
       allow read: if executive();
       allow create, update, delete: if hasRole(['coo']);
     }
 
+    // Trusted Admin SDK / server runtime only. Client writes are always denied.
     match /auditLogs/{logId} {
       allow read: if executive();
-      allow create: if signedIn() && request.resource.data.actorUid == request.auth.uid;
-      allow update, delete: if false;
+      allow create, update, delete: if false;
     }
 
     match /{document=**} {

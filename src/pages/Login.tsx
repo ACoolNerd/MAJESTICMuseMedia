@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { KeyRound, ShieldCheck, Sparkles } from 'lucide-react';
 import { useAuth } from '../features/auth/AuthContext';
 import { roleLabels } from '../features/auth/permissions';
@@ -9,7 +9,6 @@ const demoRoles: Exclude<Role, 'guest' | 'partner' | 'public'>[] = ['ceo', 'coo'
 
 export default function Login() {
   const { user, signIn, signInDemo, firebaseConfigured, demoEnabled } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,9 +16,7 @@ export default function Login() {
   const [submitting, setSubmitting] = useState(false);
   const from = (location.state as { from?: string } | null)?.from ?? '/app';
 
-  if (user) {
-    return <Navigate to={from} replace />;
-  }
+  if (user) return <Navigate to={from} replace />;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -27,10 +24,8 @@ export default function Login() {
     setMessage(null);
     try {
       await signIn(email, password);
-      navigate(from, { replace: true });
     } catch (caught) {
       setMessage(caught instanceof Error ? caught.message : 'Sign-in failed.');
-    } finally {
       setSubmitting(false);
     }
   }
@@ -38,7 +33,6 @@ export default function Login() {
   function enterDemo(role: Exclude<Role, 'guest' | 'partner' | 'public'>) {
     try {
       signInDemo(role);
-      navigate(from, { replace: true });
     } catch (caught) {
       setMessage(caught instanceof Error ? caught.message : 'Demo sign-in failed.');
     }
