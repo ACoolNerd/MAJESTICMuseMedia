@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  color: #1b1734;
+  background: #f8f4ec;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+body { margin: 0; min-width: 320px; min-height: 100vh; }
+button, a, input, select, textarea { outline-color: #c9a227; }
+::selection { background: #d8a7b1; color: #1b1734; }
+
+.muse-gradient {
+  background:
+    radial-gradient(circle at 15% 20%, rgba(139,44,111,.48), transparent 28%),
+    radial-gradient(circle at 85% 10%, rgba(201,162,39,.25), transparent 25%),
+    linear-gradient(135deg, #1b1734 0%, #2c1640 55%, #5d214f 100%);
+}
+
+.glass { background: rgba(248,244,236,.08); backdrop-filter: blur(18px); }
