@@ -1,0 +1,58 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: majestic-muse-media-api
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "10"
+        run.googleapis.com/execution-environment: gen2
+    spec:
+      serviceAccountName: majestic-muse-media-api@PROJECT_ID.iam.gserviceaccount.com
+      containerConcurrency: 40
+      timeoutSeconds: 300
+      containers:
+        - image: REGION-docker.pkg.dev/PROJECT_ID/majestic-muse/api:IMAGE_TAG
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: GOOGLE_CLOUD_PROJECT
+              value: PROJECT_ID
+            - name: FIREBASE_PROJECT_ID
+              value: PROJECT_ID
+            - name: APP_ORIGIN
+              value: https://MAJESTICMuseMedia.ai
+            - name: GEMINI_MODEL
+              value: gemini-3.6-flash
+            - name: ENABLE_EXTERNAL_ACTIONS
+              value: "false"
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: majestic-muse-gemini-api-key
+                  key: latest
+            - name: YOUTUBE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: majestic-muse-youtube-client-id
+                  key: latest
+            - name: YOUTUBE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: majestic-muse-youtube-client-secret
+                  key: latest
+            - name: YOUTUBE_REDIRECT_URI
+              value: https://api.MAJESTICMuseMedia.ai/api/oauth/youtube/callback
+            - name: TOKEN_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: majestic-muse-token-encryption-key
+                  key: latest
