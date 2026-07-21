@@ -7,6 +7,7 @@ service cloud.firestore {
     function staff() { return hasRole(['ceo','coo','post','social','crew']); }
     function executive() { return hasRole(['ceo','coo']); }
     function contentOperator() { return hasRole(['ceo','coo','post','social']); }
+    function mediaOperator() { return hasRole(['ceo','coo','post']); }
     function self(uid) { return signedIn() && request.auth.uid == uid; }
 
     match /publicContent/{document=**} {
@@ -59,6 +60,38 @@ service cloud.firestore {
     match /rightsRecords/{recordId} {
       allow read: if hasRole(['ceo','coo','post']);
       allow create, update: if hasRole(['ceo','coo','post']);
+      allow delete: if executive();
+    }
+
+    match /mediaAssets/{assetId} {
+      allow read: if staff();
+      allow create, update: if mediaOperator();
+      allow delete: if executive();
+    }
+
+    match /reviewVersions/{versionId} {
+      allow read: if staff();
+      allow create, update: if mediaOperator();
+      allow delete: if executive();
+    }
+
+    match /reviewComments/{commentId} {
+      allow read: if staff();
+      allow create: if contentOperator() && request.resource.data.authorUid == request.auth.uid;
+      allow update: if mediaOperator() || (
+        signedIn() &&
+        resource.data.authorUid == request.auth.uid &&
+        request.resource.data.authorUid == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'body', 'category', 'severity', 'resolved', 'resolvedAt'
+        ])
+      );
+      allow delete: if executive();
+    }
+
+    match /capcutPackets/{packetId} {
+      allow read: if contentOperator();
+      allow create, update: if mediaOperator();
       allow delete: if executive();
     }
 
