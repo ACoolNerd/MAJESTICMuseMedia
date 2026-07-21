@@ -17,5 +17,5 @@ export const connections: PlatformConnection[] = [
 ];
 
 export const navModules = [
-  ['Executive', '/app/executive'], ['Episodes', '/app/episodes'], ['Calendar', '/app/calendar'], ['Guests', '/app/guests'], ['Live', '/app/live'], ['Media', '/app/media'], ['Review', '/app/review'], ['CapCut', '/app/capcut'], ['Distribution', '/app/distribution'], ['YouTube', '/app/youtube'], ['Community', '/app/community'], ['Leads', '/app/leads'], ['Analytics', '/app/analytics'], ['Rights', '/app/rights'], ['Tasks', '/app/tasks'], ['Approvals', '/app/approvals'], ['Muse Intelligence', '/app/ai'], ['Settings', '/app/settings'],
+  ['Executive', '/app/executive'], ['Episodes', '/app/episodes'], ['Calendar', '/app/calendar'], ['Guests', '/app/guests'], ['Live', '/app/live'], ['Media', '/app/media'], ['Review', '/app/review'], ['CapCut', '/app/capcut'], ['Distribution', '/app/distribution'], ['YouTube', '/app/youtube'], ['Repurposing', '/app/repurposing'], ['Community', '/app/community'], ['Leads', '/app/leads'], ['Analytics', '/app/analytics'], ['Rights', '/app/rights'], ['Tasks', '/app/tasks'], ['Approvals', '/app/approvals'], ['Muse Intelligence', '/app/ai'], ['Settings', '/app/settings'],
 ] as const;
