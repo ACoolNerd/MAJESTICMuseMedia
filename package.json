@@ -13,7 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:rules": "firebase emulators:exec --only firestore --project demo-majestic-muse \"npm run test:rules:inner\"",
-    "test:rules:inner": "vitest run --config vitest.rules.config.ts"
+    "test:rules:inner": "vitest run --config vitest.rules.config.ts",
+    "security:scan": "node scripts/check-repository-safety.mjs"
   },
   "dependencies": {
     "firebase": "^12.16.0",
