@@ -30,6 +30,10 @@ export default function Distribution() {
   }
 
   async function executeTest(job: DistributionJobRecord) {
+    if (persistenceMode !== 'Local demo') {
+      setMessage('Browser test execution is disabled when Firestore is active. Production actions must run through the trusted server adapter.');
+      return;
+    }
     const connection = connections.find(item => item.platform === job.platform);
     const decision = canExecuteDistributionJob(job, connection);
     if (!decision.allowed) {
