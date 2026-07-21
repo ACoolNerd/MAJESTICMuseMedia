@@ -1,6 +1,12 @@
-import { ArrowRight, Mic2, Play, Radio, Sparkles } from 'lucide-react';
+import { ArrowRight, Mic2, Play, Radio, Sparkles, type LucideIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PublicHeader } from '../components/Shell';
+
+const features: Array<{ icon: LucideIcon; title: string; copy: string }> = [
+  { icon: Mic2, title: 'Cinematic conversations', copy: 'Identity, faith, purpose, family, leadership, creativity, legacy, and calling.' },
+  { icon: Radio, title: 'Live across platforms', copy: 'One control plane for YouTube, Twitch, KICK, chat, moderation, and replay workflows.' },
+  { icon: Sparkles, title: 'Every story becomes a system', copy: 'Episodes become clips, images, articles, newsletters, community prompts, and measurable journeys.' },
+];
 
 export default function Home() {
   return <div className="bg-[#F8F4EC]">
@@ -15,10 +21,6 @@ export default function Home() {
         </div>
       </div>
     </section>
-    <section className="mx-auto grid max-w-7xl gap-5 px-5 py-20 md:grid-cols-3 md:px-10">{[
-      [Mic2,'Cinematic conversations','Identity, faith, purpose, family, leadership, creativity, legacy, and calling.'],
-      [Radio,'Live across platforms','One control plane for YouTube, Twitch, KICK, chat, moderation, and replay workflows.'],
-      [Sparkles,'Every story becomes a system','Episodes become clips, images, articles, newsletters, community prompts, and measurable journeys.'],
-    ].map(([Icon,title,copy]) => <article key={String(title)} className="rounded-3xl border border-[#1B1734]/10 bg-white p-7 shadow-sm"><Icon className="text-[#8B2C6F]"/><h2 className="mt-5 font-serif text-2xl">{title as string}</h2><p className="mt-3 leading-7 text-[#1B1734]/65">{copy as string}</p></article>)}</section>
+    <section className="mx-auto grid max-w-7xl gap-5 px-5 py-20 md:grid-cols-3 md:px-10">{features.map(({ icon: Icon, title, copy }) => <article key={title} className="rounded-3xl border border-[#1B1734]/10 bg-white p-7 shadow-sm"><Icon className="text-[#8B2C6F]"/><h2 className="mt-5 font-serif text-2xl">{title}</h2><p className="mt-3 leading-7 text-[#1B1734]/65">{copy}</p></article>)}</section>
   </div>;
 }
