@@ -3,28 +3,79 @@ service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn() { return request.auth != null; }
     function role() { return signedIn() ? request.auth.token.role : null; }
-    function staff() { return role() in ['ceo','coo','post','social','crew']; }
-    function executive() { return role() in ['ceo','coo']; }
+    function hasRole(roles) { return role() in roles; }
+    function staff() { return hasRole(['ceo','coo','post','social','crew']); }
+    function executive() { return hasRole(['ceo','coo']); }
+    function contentOperator() { return hasRole(['ceo','coo','post','social']); }
+    function self(uid) { return signedIn() && request.auth.uid == uid; }
 
     match /publicContent/{document=**} {
       allow read: if true;
       allow write: if executive();
     }
+
+    match /users/{uid} {
+      allow read: if self(uid) || executive();
+      allow create, delete: if executive();
+      allow update: if executive() || (
+        self(uid) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'displayName', 'photoURL', 'updatedAt'
+        ])
+      );
+    }
+
     match /episodes/{episodeId} {
       allow read: if staff();
-      allow create, update: if role() in ['ceo','coo','post','social'];
+      allow create, update: if contentOperator();
       allow delete: if executive();
     }
-    match /guestDocuments/{document=**} {
-      allow read, write: if executive();
+
+    match /guests/{guestId} {
+      allow read: if staff() || (signedIn() && resource.data.ownerUid == request.auth.uid);
+      allow create, update: if contentOperator();
+      allow delete: if executive();
     }
+
+    match /guestDocuments/{documentId} {
+      allow read: if executive() || hasRole(['post']) || (signedIn() && resource.data.ownerUid == request.auth.uid);
+      allow create: if executive() || (signedIn() && request.resource.data.ownerUid == request.auth.uid);
+      allow update: if executive() || (signedIn() && resource.data.ownerUid == request.auth.uid && request.resource.data.ownerUid == request.auth.uid);
+      allow delete: if executive();
+    }
+
+    match /tasks/{taskId} {
+      allow read: if staff();
+      allow create, update: if staff();
+      allow delete: if executive();
+    }
+
+    match /approvals/{approvalId} {
+      allow read: if staff();
+      allow create: if contentOperator();
+      allow update: if hasRole(['ceo','coo','post','social']);
+      allow delete: if executive();
+    }
+
+    match /rightsRecords/{recordId} {
+      allow read: if hasRole(['ceo','coo','post']);
+      allow create, update: if hasRole(['ceo','coo','post']);
+      allow delete: if executive();
+    }
+
+    match /platformConnections/{connectionId} {
+      allow read: if executive();
+      allow create, update, delete: if hasRole(['coo']);
+    }
+
     match /auditLogs/{logId} {
       allow read: if executive();
-      allow create: if signedIn();
+      allow create: if signedIn() && request.resource.data.actorUid == request.auth.uid;
       allow update, delete: if false;
     }
+
     match /{document=**} {
-      allow read, write: if staff();
+      allow read, write: if false;
     }
   }
 }
