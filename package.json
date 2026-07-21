@@ -11,7 +11,9 @@
     "typecheck": "tsc -b --pretty false",
     "lint": "eslint . --max-warnings=0",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-majestic-muse \"npm run test:rules:inner\"",
+    "test:rules:inner": "vitest run --config vitest.rules.config.ts"
   },
   "dependencies": {
     "firebase": "^12.16.0",
@@ -23,6 +25,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
+    "@firebase/rules-unit-testing": "^5.0.0",
     "@tailwindcss/vite": "^4.3.3",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",
@@ -33,6 +36,7 @@
     "eslint": "^9.39.2",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
+    "firebase-tools": "^15.22.4",
     "globals": "^16.5.0",
     "jsdom": "^27.2.0",
     "tailwindcss": "^4.3.3",
