@@ -8,8 +8,15 @@ describe('MAJESTIC Muse Media app', () => {
     expect(screen.getByText(/Where faith, purpose, and identity/i)).toBeInTheDocument();
   });
 
-  it('keeps platform integrations visibly disconnected by default', () => {
+  it('redirects unauthenticated private traffic to sign in', async () => {
     render(<MemoryRouter initialEntries={['/app']}><App/></MemoryRouter>);
-    expect(screen.getAllByText('Connection Required').length).toBeGreaterThan(0);
+    expect(await screen.findByText('Control Center sign in')).toBeInTheDocument();
+    expect(screen.getByText(/Firebase Authentication is not configured/i)).toBeInTheDocument();
+  });
+
+  it('does not expose local demo roles unless explicitly enabled', async () => {
+    render(<MemoryRouter initialEntries={['/login']}><App/></MemoryRouter>);
+    expect(await screen.findByText('Control Center sign in')).toBeInTheDocument();
+    expect(screen.queryByText('Local development demo')).not.toBeInTheDocument();
   });
 });
