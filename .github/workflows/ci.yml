@@ -6,7 +6,7 @@ on:
     branches: [main]
 
 jobs:
-  quality:
+  client-quality:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -14,23 +14,70 @@ jobs:
         with:
           node-version: 22
       - run: npm install
-      - name: Typecheck
-        run: npm run typecheck 2>&1 | tee typecheck.log
-      - name: Upload typecheck diagnostics
+      - name: Client typecheck
+        run: npm run typecheck 2>&1 | tee client-typecheck.log
+      - name: Upload client typecheck diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: typecheck-diagnostics
-          path: typecheck.log
+          name: client-typecheck-diagnostics
+          path: client-typecheck.log
           retention-days: 7
       - run: npm run lint
-      - run: npm run test
-      - name: Build
-        run: npm run build 2>&1 | tee build.log
-      - name: Upload build diagnostics
+      - name: Client tests
+        run: npm run test 2>&1 | tee client-test.log
+      - name: Upload client test diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: build-diagnostics
-          path: build.log
+          name: client-test-diagnostics
+          path: client-test.log
+          retention-days: 7
+      - name: Client build
+        run: npm run build 2>&1 | tee client-build.log
+      - name: Upload client build diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-build-diagnostics
+          path: client-build.log
+          retention-days: 7
+
+  server-quality:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - name: Server typecheck
+        run: npm run typecheck 2>&1 | tee server-typecheck.log
+      - name: Upload server typecheck diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-typecheck-diagnostics
+          path: server/server-typecheck.log
+          retention-days: 7
+      - name: Server tests
+        run: npm run test 2>&1 | tee server-test.log
+      - name: Upload server test diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-test-diagnostics
+          path: server/server-test.log
+          retention-days: 7
+      - name: Server build
+        run: npm run build 2>&1 | tee server-build.log
+      - name: Upload server build diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-build-diagnostics
+          path: server/server-build.log
           retention-days: 7

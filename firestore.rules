@@ -108,6 +108,11 @@ service cloud.firestore {
       allow create, update, delete: if hasRole(['coo']);
     }
 
+    // Encrypted OAuth credentials are trusted-server-only and invisible to all clients.
+    match /platformCredentials/{credentialId} {
+      allow read, write: if false;
+    }
+
     match /liveEvents/{eventId} {
       allow read: if staff();
       allow create, update: if contentOperator();
