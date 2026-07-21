@@ -1,0 +1,40 @@
+substitutions:
+  _REGION: us-central1
+  _ARTIFACT_REPOSITORY: majestic-muse-media
+  _IMAGE_NAME: api
+
+steps:
+  - id: build-server-image
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file
+      - server/Dockerfile
+      - --tag
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/${_IMAGE_NAME}:$SHORT_SHA
+      - server
+
+  - id: push-server-image
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/${_IMAGE_NAME}:$SHORT_SHA
+
+  - id: describe-pushed-image
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: gcloud
+    args:
+      - artifacts
+      - docker
+      - images
+      - describe
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/${_IMAGE_NAME}:$SHORT_SHA
+      - --format=json
+
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPOSITORY}/${_IMAGE_NAME}:$SHORT_SHA
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: 1200s
