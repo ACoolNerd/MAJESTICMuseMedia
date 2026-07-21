@@ -1,14 +1,26 @@
 import { readFile } from 'node:fs/promises';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, it } from 'vitest';
 import {
   assertFails,
   assertSucceeds,
   initializeTestEnvironment,
   type RulesTestEnvironment,
 } from '@firebase/rules-unit-testing';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
 
 let environment: RulesTestEnvironment;
+
+async function seedRecords() {
+  await environment.withSecurityRulesDisabled(async context => {
+    const db = context.firestore();
+    await setDoc(doc(db, 'publicContent', 'home'), { title: 'Public home' });
+    await setDoc(doc(db, 'episodes', 's01e01'), { title: 'IDENTITY', status: 'Scheduled' });
+    await setDoc(doc(db, 'guestDocuments', 'rebecca-release'), { ownerUid: 'guest-1', status: 'Signed' });
+    await setDoc(doc(db, 'auditLogs', 'audit-1'), { action: 'seed', createdAt: new Date().toISOString() });
+    await setDoc(doc(db, 'platformCredentials', 'youtube-coo'), { encryptedRefreshToken: 'ciphertext' });
+    await setDoc(doc(db, 'distributionJobs', 'job-1'), { status: 'Draft', requestedByUid: 'social-1', attempts: 0 });
+  });
+}
 
 beforeAll(async () => {
   environment = await initializeTestEnvironment({
@@ -19,29 +31,12 @@ beforeAll(async () => {
       port: 8080,
     },
   });
-
-  await environment.withSecurityRulesDisabled(async context => {
-    const db = context.firestore();
-    await setDoc(doc(db, 'publicContent', 'home'), { title: 'Public home' });
-    await setDoc(doc(db, 'episodes', 's01e01'), { title: 'IDENTITY', status: 'Scheduled' });
-    await setDoc(doc(db, 'guestDocuments', 'rebecca-release'), { ownerUid: 'guest-1', status: 'Signed' });
-    await setDoc(doc(db, 'auditLogs', 'audit-1'), { action: 'seed', createdAt: new Date().toISOString() });
-    await setDoc(doc(db, 'platformCredentials', 'youtube-coo'), { encryptedRefreshToken: 'ciphertext' });
-    await setDoc(doc(db, 'distributionJobs', 'job-1'), { status: 'Draft', requestedByUid: 'social-1', attempts: 0 });
-  });
+  await seedRecords();
 });
 
 afterEach(async () => {
   await environment.clearFirestore();
-  await environment.withSecurityRulesDisabled(async context => {
-    const db = context.firestore();
-    await setDoc(doc(db, 'publicContent', 'home'), { title: 'Public home' });
-    await setDoc(doc(db, 'episodes', 's01e01'), { title: 'IDENTITY', status: 'Scheduled' });
-    await setDoc(doc(db, 'guestDocuments', 'rebecca-release'), { ownerUid: 'guest-1', status: 'Signed' });
-    await setDoc(doc(db, 'auditLogs', 'audit-1'), { action: 'seed', createdAt: new Date().toISOString() });
-    await setDoc(doc(db, 'platformCredentials', 'youtube-coo'), { encryptedRefreshToken: 'ciphertext' });
-    await setDoc(doc(db, 'distributionJobs', 'job-1'), { status: 'Draft', requestedByUid: 'social-1', attempts: 0 });
-  });
+  await seedRecords();
 });
 
 afterAll(async () => {
@@ -117,10 +112,29 @@ describe('deny-by-default behavior', () => {
     await assertFails(setDoc(doc(db, 'unregisteredCollection', 'record-1'), { value: true }));
   });
 
-  it('keeps anonymous form submissions write-only', async () => {
+  it('keeps validated anonymous form submissions write-only', async () => {
     const db = unauthenticated();
-    await assertSucceeds(setDoc(doc(db, 'formSubmissions', 'submission-1'), { formType: 'newsletter', consent: true, status: 'New' }));
+    await assertSucceeds(setDoc(doc(db, 'formSubmissions', 'submission-1'), {
+      formType: 'newsletter',
+      consent: true,
+      source: 'MAJESTICMuseMedia.ai/newsletter',
+      payload: { name: 'Test Viewer', email: 'viewer@example.test', interests: ['identity'] },
+      status: 'New',
+      submittedAt: serverTimestamp(),
+    }));
     await assertFails(getDoc(doc(db, 'formSubmissions', 'submission-1')));
-    expect(true).toBe(true);
+  });
+
+  it('rejects malformed or over-privileged anonymous form submissions', async () => {
+    const db = unauthenticated();
+    await assertFails(setDoc(doc(db, 'formSubmissions', 'bad-status'), {
+      formType: 'newsletter', consent: true, source: 'public', payload: {}, status: 'Qualified', submittedAt: serverTimestamp(),
+    }));
+    await assertFails(setDoc(doc(db, 'formSubmissions', 'unknown-form'), {
+      formType: 'admin-command', consent: true, source: 'public', payload: {}, status: 'New', submittedAt: serverTimestamp(),
+    }));
+    await assertFails(setDoc(doc(db, 'formSubmissions', 'extra-field'), {
+      formType: 'newsletter', consent: true, source: 'public', payload: {}, status: 'New', submittedAt: serverTimestamp(), role: 'ceo',
+    }));
   });
 });
