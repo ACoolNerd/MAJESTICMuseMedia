@@ -14,7 +14,14 @@ jobs:
         with:
           node-version: 22
       - name: Scan tracked files for credential material
-        run: node scripts/check-repository-safety.mjs
+        run: node scripts/check-repository-safety.mjs 2>&1 | tee repository-safety.log
+      - name: Upload repository safety diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: repository-safety-diagnostics
+          path: repository-safety.log
+          retention-days: 7
 
   firestore-rules:
     runs-on: ubuntu-latest
