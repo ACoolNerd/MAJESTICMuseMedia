@@ -1,0 +1,138 @@
+project: MAJESTICMuseMedia.ai
+updated_at: 2026-07-21
+status_values:
+  - not_started
+  - in_progress
+  - evidence_required
+  - passed
+  - blocked
+
+release_policy:
+  external_actions_enabled: false
+  production_deployment_authorized: false
+  public_launch_authorized: false
+
+owners:
+  executive_approval: Marchette
+  technology_and_security: Keith McPherson / ACoolNERD
+  post_production: Brian Schwager
+  distribution_and_community: Ares Schwager
+
+launch_gates:
+  - id: repository-policy
+    title: Private repository or approved public-source policy
+    owner: technology_and_security
+    status: blocked
+    evidence:
+      - Repository visibility decision
+      - Secret-history scan
+      - Branch-protection configuration
+
+  - id: brand-approval
+    title: Final brand and executive approval
+    owner: executive_approval
+    status: evidence_required
+    evidence:
+      - Final logo and palette approval
+      - Approved photography and likeness policy
+      - Public copy approval
+
+  - id: security-review
+    title: Security architecture and authorization review
+    owner: technology_and_security
+    status: in_progress
+    evidence:
+      - Client and server CI
+      - Firestore emulator rule tests
+      - Secret-management plan
+      - Threat model and incident contacts
+
+  - id: privacy-legal
+    title: Privacy, terms, consent and data-retention review
+    owner: executive_approval
+    status: evidence_required
+    evidence:
+      - Approved privacy notice
+      - Terms and community guidelines
+      - Guest and contributor releases
+      - Deletion and export procedure
+
+  - id: accessibility-mobile
+    title: Accessibility and mobile acceptance
+    owner: technology_and_security
+    status: evidence_required
+    evidence:
+      - Keyboard-navigation test
+      - Contrast review
+      - Form-label review
+      - Mobile device acceptance
+
+  - id: source-truth
+    title: Source hierarchy and truth-status verification
+    owner: technology_and_security
+    status: in_progress
+    evidence:
+      - Source registry
+      - Proposed/TBD transition tests
+      - Muse citation and uncertainty tests
+
+  - id: cloud-staging
+    title: Staging Google Cloud and Firebase environment
+    owner: technology_and_security
+    status: blocked
+    evidence:
+      - Staging project ID
+      - Least-privilege service accounts
+      - Secret Manager values
+      - Firestore and Storage configuration
+      - Cloud Run staging revision
+
+  - id: platform-compliance
+    title: Platform OAuth and API compliance
+    owner: technology_and_security
+    status: blocked
+    evidence:
+      - YouTube OAuth client and consent review
+      - Twitch application and EventSub validation
+      - KICK application and supported-capability review
+      - Webhook signature and replay tests
+
+  - id: rights-release
+    title: Rights and release workflow verification
+    owner: executive_approval
+    status: evidence_required
+    evidence:
+      - Guest release test
+      - Music and image rights test
+      - Sponsor and affiliate disclosure test
+      - Executive waiver procedure
+
+  - id: production-deployment
+    title: Production deployment and rollback acceptance
+    owner: technology_and_security
+    status: blocked
+    evidence:
+      - Production project and secrets
+      - Container vulnerability review
+      - Monitoring and alerting
+      - Backup and restore test
+      - Rollback rehearsal
+
+  - id: domain
+    title: MAJESTICMuseMedia.ai domain connection
+    owner: technology_and_security
+    status: blocked
+    evidence:
+      - Domain ownership
+      - DNS records
+      - TLS validation
+      - Web and API routing
+
+  - id: launch-approval
+    title: Written public-launch approval
+    owner: executive_approval
+    status: blocked
+    evidence:
+      - All required gates passed
+      - Written executive authorization
+      - External-action enablement record
