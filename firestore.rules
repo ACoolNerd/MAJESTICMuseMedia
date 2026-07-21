@@ -101,9 +101,25 @@ service cloud.firestore {
       allow delete: if executive();
     }
 
+    // Metadata only. Tokens and secrets remain in the trusted server secret store.
     match /platformConnections/{connectionId} {
-      allow read: if executive();
+      allow read: if staff();
       allow create, update, delete: if hasRole(['coo']);
+    }
+
+    match /liveEvents/{eventId} {
+      allow read: if staff();
+      allow create, update: if contentOperator();
+      allow delete: if executive();
+    }
+
+    match /distributionJobs/{jobId} {
+      allow read: if staff();
+      allow create: if contentOperator() && request.resource.data.status in ['Draft', 'Waiting Approval'];
+      allow update: if contentOperator() &&
+        !(request.resource.data.status in ['Processing', 'Succeeded', 'Failed']) &&
+        (request.resource.data.status != 'Approved' || role() == 'ceo');
+      allow delete: if executive();
     }
 
     // Trusted Admin SDK / server runtime only. Client writes are always denied.
