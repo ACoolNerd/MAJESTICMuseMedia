@@ -73,10 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!auth) {
-      setLoading(false);
-      return undefined;
-    }
+    if (!auth) return undefined;
 
     return onAuthStateChanged(auth, async firebaseUser => {
       try {
