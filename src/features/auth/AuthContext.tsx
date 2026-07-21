@@ -35,6 +35,7 @@ interface AuthContextValue {
   signIn: (email: string, password: string) => Promise<void>;
   signInDemo: (role: Exclude<Role, 'guest' | 'partner' | 'public'>) => void;
   signOut: () => Promise<void>;
+  refreshClaims: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -54,8 +55,8 @@ function displayNameForRole(role: Role): string {
   return names[role];
 }
 
-async function mapFirebaseUser(firebaseUser: FirebaseUser): Promise<AppUser> {
-  const token = await getIdTokenResult(firebaseUser, true);
+async function mapFirebaseUser(firebaseUser: FirebaseUser, forceRefresh = false): Promise<AppUser> {
+  const token = await getIdTokenResult(firebaseUser, forceRefresh);
   const role = isRole(token.claims.role) ? token.claims.role : 'public';
 
   return {
@@ -95,16 +96,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     firebaseConfigured,
     demoEnabled,
     signIn: async (email, password) => {
-      if (!auth) {
-        throw new Error('Firebase Authentication is not configured.');
-      }
+      if (!auth) throw new Error('Firebase Authentication is not configured.');
       setError(null);
       await signInWithEmailAndPassword(auth, email, password);
     },
     signInDemo: role => {
-      if (!demoEnabled || firebaseConfigured) {
-        throw new Error('Demo authentication is disabled.');
-      }
+      if (!demoEnabled || firebaseConfigured) throw new Error('Demo authentication is disabled.');
       setError(null);
       setUser({
         uid: `demo-${role}`,
@@ -122,6 +119,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       await firebaseSignOut(auth);
     },
+    refreshClaims: async () => {
+      if (!auth?.currentUser) return;
+      setUser(await mapFirebaseUser(auth.currentUser, true));
+    },
   }), [error, loading, user]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -129,8 +130,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth(): AuthContextValue {
   const value = useContext(AuthContext);
-  if (!value) {
-    throw new Error('useAuth must be used within AuthProvider.');
-  }
+  if (!value) throw new Error('useAuth must be used within AuthProvider.');
   return value;
 }
