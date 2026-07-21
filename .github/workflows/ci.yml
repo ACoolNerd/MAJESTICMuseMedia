@@ -24,7 +24,15 @@ jobs:
           path: client-typecheck.log
           retention-days: 7
       - run: npm run lint
-      - run: npm run test
+      - name: Client tests
+        run: npm run test 2>&1 | tee client-test.log
+      - name: Upload client test diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-test-diagnostics
+          path: client-test.log
+          retention-days: 7
       - name: Client build
         run: npm run build 2>&1 | tee client-build.log
       - name: Upload client build diagnostics
@@ -55,7 +63,15 @@ jobs:
           name: server-typecheck-diagnostics
           path: server/server-typecheck.log
           retention-days: 7
-      - run: npm run test
+      - name: Server tests
+        run: npm run test 2>&1 | tee server-test.log
+      - name: Upload server test diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-test-diagnostics
+          path: server/server-test.log
+          retention-days: 7
       - name: Server build
         run: npm run build 2>&1 | tee server-build.log
       - name: Upload server build diagnostics
