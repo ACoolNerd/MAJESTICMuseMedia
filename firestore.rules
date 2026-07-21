@@ -8,6 +8,7 @@ service cloud.firestore {
     function executive() { return hasRole(['ceo','coo']); }
     function contentOperator() { return hasRole(['ceo','coo','post','social']); }
     function mediaOperator() { return hasRole(['ceo','coo','post']); }
+    function growthOperator() { return hasRole(['ceo','coo','social']); }
     function self(uid) { return signedIn() && request.auth.uid == uid; }
 
     match /publicContent/{document=**} {
@@ -120,6 +121,35 @@ service cloud.firestore {
         !(request.resource.data.status in ['Processing', 'Succeeded', 'Failed']) &&
         (request.resource.data.status != 'Approved' || role() == 'ceo');
       allow delete: if executive();
+    }
+
+    match /sourceRegistry/{sourceId} {
+      allow read: if staff();
+      allow create, update, delete: if executive();
+    }
+
+    match /analyticsSnapshots/{snapshotId} {
+      allow read: if staff();
+      allow create, update: if executive();
+      allow delete: if executive();
+    }
+
+    match /leads/{leadId} {
+      allow read: if growthOperator();
+      allow create, update: if growthOperator();
+      allow delete: if executive();
+    }
+
+    match /repurposingMoments/{momentId} {
+      allow read: if contentOperator();
+      allow create, update: if contentOperator();
+      allow delete: if executive();
+    }
+
+    // Trusted Gemini and server-generated outputs only. Client writes are denied.
+    match /aiConversations/{conversationId} {
+      allow read: if executive();
+      allow create, update, delete: if false;
     }
 
     // Trusted Admin SDK / server runtime only. Client writes are always denied.
