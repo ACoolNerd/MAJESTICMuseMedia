@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
 import { CheckCircle2, Clock3, MessageSquareText } from 'lucide-react';
 import { AppShell } from '../components/Shell';
 import { useAuth } from '../features/auth/AuthContext';
@@ -12,13 +12,9 @@ const severities: CommentSeverity[] = ['Note','Important','Blocking'];
 export default function Review() {
   const { user } = useAuth();
   const { versions, comments, saveComment, persistenceMode } = useMedia();
-  const [versionId, setVersionId] = useState('');
+  const [selectedVersionId, setSelectedVersionId] = useState('');
   const [message, setMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!versionId && versions[0]) setVersionId(versions[0].id);
-  }, [versionId, versions]);
-
+  const versionId = selectedVersionId || versions[0]?.id || '';
   const versionComments = useMemo(() => comments.filter(comment => comment.versionId === versionId), [comments, versionId]);
   const revisions = commentsToRevisionList(versionComments);
 
@@ -49,7 +45,7 @@ export default function Review() {
   }
 
   return <AppShell>
-    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end"><div><h1 className="font-serif text-4xl">Media Review</h1><p className="mt-2 text-[#1B1734]/60">One versioned, time-coded conversation instead of scattered notes.</p></div><select value={versionId} onChange={event => setVersionId(event.target.value)} className="rounded-full border border-[#1B1734]/15 bg-white px-4 py-2 text-sm" aria-label="Review version">{versions.map(version => <option key={version.id} value={version.id}>{version.label} · {version.status}</option>)}</select></div>
+    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end"><div><h1 className="font-serif text-4xl">Media Review</h1><p className="mt-2 text-[#1B1734]/60">One versioned, time-coded conversation instead of scattered notes.</p></div><select value={versionId} onChange={event => setSelectedVersionId(event.target.value)} className="rounded-full border border-[#1B1734]/15 bg-white px-4 py-2 text-sm" aria-label="Review version">{versions.map(version => <option key={version.id} value={version.id}>{version.label} · {version.status}</option>)}</select></div>
     {message && <p role="status" className="mt-5 rounded-2xl bg-[#8B2C6F]/10 p-4 text-sm text-[#8B2C6F]">{message}</p>}
     <div className="mt-7 grid gap-5 xl:grid-cols-[1.35fr_.65fr]">
       <section className="rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-[#1B1734]/5">
